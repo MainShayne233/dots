@@ -13,7 +13,10 @@ const prodPlugins = [
     __PROD: prod,
     __DEV: env === 'dev'
   }),
-  new CopyWebpackPlugin([{from: "./assets"}]),
+  new CopyWebpackPlugin([{
+    from: path.join(__dirname, 'static'),
+    to: path.join(__dirname, '..', 'priv', 'static'),
+  }]),
   new ExtractTextPlugin("css/styles.css"),
   new WriteFilePlugin(),
 ]
@@ -26,7 +29,6 @@ const devPlugins = [
   new webpack.optimize.OccurrenceOrderPlugin(),
   new webpack.NoEmitOnErrorsPlugin(),
   new webpack.HotModuleReplacementPlugin(),
-  new WriteFilePlugin(),
   new webpack.DefinePlugin({
     __PROD: prod,
     __DEV: env === 'dev',
@@ -38,13 +40,21 @@ const publicPath = "http://localhost:4002/"
 const entry = path.join(__dirname, 'js', 'main.js')
 const hot = 'webpack-dev-server/client?http://localhost:4002'
 
+const elmLoaderOptions = {
+  pathToMake: './node_modules/.bin/elm-make',
+  cwd: prod ? 'assets' : '.',
+  verbose: !prod,
+  debug: !prod,
+  warn: !prod,
+}
+
 const config = {
   devtool: prod ? false : 'cheap-module-eval-source-map',
   entry: prod ? entry : [hot, entry],
   output: {
     path: path.join(__dirname, '..', 'priv', 'static', 'js'),
     filename: 'app.bundle.js',
-    publicPath: publicPath, 
+    publicPath: publicPath,
   },
   devServer: {
     hot: true,
@@ -75,6 +85,13 @@ const config = {
   },
   module: {
     rules: [
+    {
+      test: /\.(jpg|png|svg)$/,
+      loader: 'url-loader',
+       options: {
+        limit: 25000,
+      },
+    },
       {
         test: /\.scss$/,
         use: [
@@ -84,12 +101,16 @@ const config = {
         ],
       },
       {
-
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
         use: [
-          'elm-hot-loader',
-          `elm-webpack-loader?pathToMake=./node_modules/.bin/elm-make${prod ? '&cwd=assets' : ''}&verbose=true&warn=false`,
+          {
+            loader: 'elm-hot-loader',
+          },
+          {
+            loader: 'elm-webpack-loader',
+            options: elmLoaderOptions,
+          },
         ],
       },
     ],
