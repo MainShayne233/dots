@@ -143,6 +143,7 @@ dotsPayloadDecoder =
         |> required "dots" dotsDecoder
 
 
+dotsDecoder : Json.Decode.Decoder (List Dot)
 dotsDecoder =
     Json.Decode.list dotDecoder
 
@@ -179,24 +180,23 @@ view model =
         [ renderDots model ]
 
 
+renderDots : Model -> Html msg
 renderDots { dots } =
     let
         renderedDots =
             List.map renderDot dots
     in
-    div [ style containerStyle ] renderedDots
+    div [] renderedDots
 
 
+renderDot : Dot -> Html msg
 renderDot dot =
     div [ dot |> dotStyle |> style, dot |> dotClass |> class ]
         [ span [ style textStyle ] [ text dot.name ]
         ]
 
 
-containerStyle =
-    []
-
-
+textStyle : List ( String, String )
 textStyle =
     [ ( "display", "inline-block" )
     , ( "vertical-align", "middle" )
@@ -206,6 +206,7 @@ textStyle =
     ]
 
 
+dotClass : Dot -> String
 dotClass { pulsing } =
     case pulsing of
         "true" ->
@@ -215,6 +216,7 @@ dotClass { pulsing } =
             ""
 
 
+dotStyle : Dot -> List ( String, String )
 dotStyle { color, index } =
     [ ( "height", "200px" )
     , ( "width", "200px" )
@@ -229,6 +231,7 @@ dotStyle { color, index } =
     ]
 
 
+marginLeftForIndex : Int -> String
 marginLeftForIndex index =
     let
         mod =
@@ -238,6 +241,7 @@ marginLeftForIndex index =
     String.concat [ mod, "px" ]
 
 
+marginTopForIndex : Int -> String
 marginTopForIndex index =
     let
         mod =
